@@ -22,6 +22,6 @@ void loop() {
   analogWrite(MOTOR_1_SPEED_PIN, 200);
   digitalWrite(MOTOR_2_FORWARD_PIN, HIGH);
   digitalWrite(MOTOR_2_BACKWARD_PIN, LOW);
-  analogWrite(MOTOR_2_SPEED_PIN, 200);
+  analogWrite(MOTOR_2_SPEED_PIN, 240);
   delay(1000);
 }
