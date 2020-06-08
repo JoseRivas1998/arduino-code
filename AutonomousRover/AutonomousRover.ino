@@ -83,7 +83,16 @@ void loop() {
     }
     noTone(BUZZER_PIN);
     moveBackward();
-    delay(random(1000, 2001));
+    int reverseTime = random(1000, 2001);
+    int numSlides = 16;
+    int slideTime = reverseTime / numSlides;
+    for (int i = 0; i < numSlides; i++) {
+      for (int j = 0; j < slideTime; j++) {
+        tone(BUZZER_PIN, map((i % 2 == 0 ? j : slideTime - j), 0, slideTime, 500, 2000));
+        delay(1);
+      }
+    }
+    noTone(BUZZER_PIN);
     if (random(2) == 0) {
       pivotLeft();
     } else {
