@@ -1,39 +1,19 @@
-#define MOTOR_1_SPEED_PIN 9
-#define MOTOR_1_FORWARD_PIN 8
-#define MOTOR_1_BACKWARD_PIN 7
-#define MOTOR_2_SPEED_PIN 6
-#define MOTOR_2_FORWARD_PIN 4
-#define MOTOR_2_BACKWARD_PIN 5
-
-#define ULTRASONIC_TRIG_PIN 3
-#define ULTRASONIC_ECHO_PIN 2
+#include "Rover.h"
+#include "Ultrasonic.h"
+#include "MovementIndicator.h"
 
 #define DISTANCE_THRESHOLD 10
 
-#define GREEN_PIN 10
-#define RED_PIN 12
-
 #define BUZZER_PIN 11
 
-long duration;
-long distance_cm;
 long timeSinceLastBeep;
 long timeToNextBeep;
 
 void setup() {
   // put your setup code here, to run once:
-  pinMode(MOTOR_1_SPEED_PIN, OUTPUT);
-  pinMode(MOTOR_1_FORWARD_PIN, OUTPUT);
-  pinMode(MOTOR_1_BACKWARD_PIN, OUTPUT);
-  pinMode(MOTOR_2_SPEED_PIN, OUTPUT);
-  pinMode(MOTOR_2_FORWARD_PIN, OUTPUT);
-  pinMode(MOTOR_2_BACKWARD_PIN, OUTPUT);
-
-  pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
-  pinMode(ULTRASONIC_ECHO_PIN, INPUT);
-
-  pinMode(GREEN_PIN, OUTPUT);
-  pinMode(RED_PIN, OUTPUT);
+  setupRover();
+  setupUltrasonic();
+  setupIndicator();
 
   randomSeed(analogRead(0));
 
@@ -62,10 +42,9 @@ void setup() {
 }
 
 void loop() {
-  calculateDistance();
+  long distance_cm = calculateDistanceInCentimeters();
   if (distance_cm > DISTANCE_THRESHOLD) {
-    digitalWrite(RED_PIN, LOW);
-    digitalWrite(GREEN_PIN, HIGH);
+    setMovementStatus(MOVING);
     moveForward();
     if (timeSinceLastBeep >= timeToNextBeep) {
       tone(BUZZER_PIN, randomFrequency(), 250);
@@ -73,8 +52,7 @@ void loop() {
       timeToNextBeep = random(2000, 5000);
     }
   } else {
-    digitalWrite(RED_PIN, HIGH);
-    digitalWrite(GREEN_PIN, LOW);
+    setMovementStatus(NOT_MOVING);
     stopMoving();
     timeSinceLastBeep = 0;
     for (int i = 0; i < 1000; i++) {
@@ -129,56 +107,4 @@ int randomFrequency() {
       return 523;
   }
   return 0;
-}
-
-void calculateDistance()
-{
-  digitalWrite(ULTRASONIC_TRIG_PIN, LOW);
-  delayMicroseconds(2);
-  digitalWrite(ULTRASONIC_TRIG_PIN, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(ULTRASONIC_TRIG_PIN, LOW);
-  duration = pulseIn(ULTRASONIC_ECHO_PIN, HIGH);
-  distance_cm = (duration * 343) / 20000;
-}
-
-void pivotLeft() {
-  digitalWrite(MOTOR_1_FORWARD_PIN, LOW);
-  digitalWrite(MOTOR_1_BACKWARD_PIN, HIGH);
-  analogWrite(MOTOR_1_SPEED_PIN, 200);
-  digitalWrite(MOTOR_2_FORWARD_PIN, HIGH);
-  digitalWrite(MOTOR_2_BACKWARD_PIN, LOW);
-  analogWrite(MOTOR_2_SPEED_PIN, 0);
-}
-
-void pivotRight() {
-  digitalWrite(MOTOR_1_FORWARD_PIN, HIGH);
-  digitalWrite(MOTOR_1_BACKWARD_PIN, LOW);
-  analogWrite(MOTOR_1_SPEED_PIN, 0);
-  digitalWrite(MOTOR_2_FORWARD_PIN, LOW);
-  digitalWrite(MOTOR_2_BACKWARD_PIN, HIGH);
-  analogWrite(MOTOR_2_SPEED_PIN, 240);
-}
-
-void moveForward() {
-  digitalWrite(MOTOR_1_FORWARD_PIN, HIGH);
-  digitalWrite(MOTOR_1_BACKWARD_PIN, LOW);
-  analogWrite(MOTOR_1_SPEED_PIN, 200);
-  digitalWrite(MOTOR_2_FORWARD_PIN, HIGH);
-  digitalWrite(MOTOR_2_BACKWARD_PIN, LOW);
-  analogWrite(MOTOR_2_SPEED_PIN, 240);
-}
-
-void moveBackward() {
-  digitalWrite(MOTOR_1_FORWARD_PIN, LOW);
-  digitalWrite(MOTOR_1_BACKWARD_PIN, HIGH);
-  analogWrite(MOTOR_1_SPEED_PIN, 200);
-  digitalWrite(MOTOR_2_FORWARD_PIN, LOW);
-  digitalWrite(MOTOR_2_BACKWARD_PIN, HIGH);
-  analogWrite(MOTOR_2_SPEED_PIN, 240);
-}
-
-void stopMoving() {
-  analogWrite(MOTOR_1_SPEED_PIN, 0);
-  analogWrite(MOTOR_2_SPEED_PIN, 0);
 }
